@@ -31,6 +31,21 @@ async function run() {
             res.send(services);
         });
 
+        app.get('/booking', async (req, res) => {
+            const patientEmail = req.query.patientEmail;
+            const query = { patientEmail: patientEmail };
+            const bookings = await bookingCollection.find(query).toArray();
+            res.send(bookings);
+        });
+
+        // app.get('/booking', async (req, res) => {
+        //     const patient = req.query.patientEmail;
+        //     const query = { patientEmail: patient };
+        //     const bookings = await bookingCollection.find(query).toArray();
+        //     res.send(bookings);
+        // });
+
+
         app.post('/booking', async (req, res) => {
             const booking = req.body;
             const query = { treatmentName: booking.treatmentName, date: booking.date, patientEmail: booking.patientEmail };
@@ -43,18 +58,18 @@ async function run() {
         });
 
 
-        app.get('/available', async(req,res) => {
+        app.get('/available', async (req, res) => {
             const date = req.query.date;
             // step 1: get all services
             const services = await servicesCollection.find().toArray();
             // step 2: get the booking of the day
-            const query = {date : date};
+            const query = { date: date };
             const booking = await bookingCollection.find(query).toArray();
             // step 3: for each service 
             services.forEach(service => {
                 // step 4: find bookings for that service
                 const serviceBookings = booking.filter(b => b.treatmentName === service.name);
-                const booked = serviceBookings.map(s=> s.slot);
+                const booked = serviceBookings.map(s => s.slot);
                 const available = service.slots.filter(s => !booked.includes(s));
                 service.slots = available;
             })
