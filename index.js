@@ -40,11 +40,12 @@ async function run() {
         const servicesCollection = database.collection("services");
         const bookingCollection = database.collection("bookings");
         const userCollection = database.collection("users");
+        const doctorsCollection = database.collection("doctors");
 
         // Services API
         app.get('/services', async (req, res) => {
             const query = {};
-            const cursor = servicesCollection.find(query);
+            const cursor = servicesCollection.find(query).project({ name: 1 });
             const services = await cursor.toArray();
             res.send(services);
         });
@@ -98,7 +99,7 @@ async function run() {
                 $set: user,
             };
             const result = await userCollection.updateOne(filter, updateDoc, options);
-            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '720h' });
             res.send({ result, token });
         });
 
@@ -132,7 +133,11 @@ async function run() {
             res.send(services);
         });
 
-
+        app.post('/doctor', async (req, res) => {
+            const doctor = req.body;
+            const result = await doctorsCollection.insertOne(doctor);
+            res.send(result);
+        });
 
 
 
